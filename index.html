@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goods Allocation Request</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <p class="sidebar-kicker">Operations</p>
+          <h2>Menu</h2>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Primary navigation">
+          <div class="nav-group">
+            <button type="button" class="nav-parent is-open">
+              Allocation Management
+            </button>
+            <a href="/Users/kaiyiqin/Documents/Codex/codex-project/list.html" class="nav-child">
+              List of Allocation Request
+            </a>
+            <a
+              href="/Users/kaiyiqin/Documents/Codex/codex-project/index.html"
+              class="nav-child is-active"
+              aria-current="page"
+            >
+              Goods Allocation Request
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="page-shell">
+        <section class="hero">
+          <p class="eyebrow">Warehouse Operations</p>
+          <h1>Goods Allocation Request</h1>
+          <p class="intro">
+            Capture transfer details, validate the request, and preview the final
+            payload before it goes anywhere else.
+          </p>
+        </section>
+
+        <section class="panel">
+          <form id="allocation-form" novalidate>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Header</p>
+                <h2>Request Information</h2>
+              </div>
+            </div>
+
+            <div class="header-grid">
+              <div class="field">
+                <label for="creation_date">Creation Date</label>
+                <input id="creation_date" name="creation_date" type="text" readonly disabled />
+              </div>
+
+              <div class="field">
+                <label for="execution_date">Execution Date</label>
+                <input id="execution_date" name="execution_date" type="date" />
+              </div>
+
+              <div class="field">
+                <label for="remark">Remark</label>
+                <input
+                  id="remark"
+                  name="remark"
+                  type="text"
+                  placeholder="Add an optional note"
+                />
+              </div>
+
+              <div class="field">
+                <label for="from_warehouse_select">From Warehouse</label>
+                <select
+                  id="from_warehouse_select"
+                  name="from_warehouse_select"
+                  data-custom-target="from_warehouse_custom"
+                >
+                  <option value="">Select a warehouse</option>
+                  <option value="North Hub">North Hub</option>
+                  <option value="South Hub">South Hub</option>
+                  <option value="East Depot">East Depot</option>
+                  <option value="Custom">Custom...</option>
+                </select>
+                <input
+                  id="from_warehouse_custom"
+                  name="from_warehouse_custom"
+                  type="text"
+                  class="custom-input hidden"
+                  placeholder="Enter custom warehouse"
+                  disabled
+                />
+                <p class="error-message" data-error-for="From_warehouse"></p>
+              </div>
+
+              <div class="field">
+                <label for="to_warehouse_select">To Warehouse</label>
+                <select
+                  id="to_warehouse_select"
+                  name="to_warehouse_select"
+                  data-custom-target="to_warehouse_custom"
+                >
+                  <option value="">Select a warehouse</option>
+                  <option value="Central Hub">Central Hub</option>
+                  <option value="Returns Center">Returns Center</option>
+                  <option value="Overflow Site">Overflow Site</option>
+                  <option value="Custom">Custom...</option>
+                </select>
+                <input
+                  id="to_warehouse_custom"
+                  name="to_warehouse_custom"
+                  type="text"
+                  class="custom-input hidden"
+                  placeholder="Enter custom warehouse"
+                  disabled
+                />
+                <p class="error-message" data-error-for="To_warehouse"></p>
+              </div>
+            </div>
+
+            <div class="section-heading details-heading">
+              <div>
+                <p class="section-kicker">Details</p>
+                <h2>SKU Lines</h2>
+              </div>
+              <button type="button" id="add-row" class="icon-button add-row-button" aria-label="Add row" title="Add row">
+                <span aria-hidden="true">+</span>
+              </button>
+            </div>
+
+            <div id="details-error" class="form-level-error" aria-live="polite"></div>
+            <div id="detail-rows" class="detail-rows"></div>
+
+            <div class="actions">
+              <button type="submit" class="primary-button">Submit</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <template id="detail-row-template">
+      <article class="detail-row">
+        <div class="detail-grid">
+          <div class="field">
+            <label>SKU Number</label>
+            <input
+              type="text"
+              name="SKU_number"
+              class="sku-picker-input"
+              placeholder="Click to choose SKU"
+              readonly
+            />
+            <p class="error-message" data-error-for="SKU_number"></p>
+          </div>
+
+          <div class="field">
+            <label>SKU Name</label>
+            <input type="text" name="SKU_name" />
+            <p class="error-message" data-error-for="SKU_name"></p>
+          </div>
+
+          <div class="field">
+            <label>Batch Number</label>
+            <input type="text" name="batch_number" />
+            <p class="error-message" data-error-for="batch_number"></p>
+          </div>
+
+          <div class="field">
+            <label>Goods Status</label>
+            <select name="goods_status_select" data-custom-target="goods_status_custom">
+              <option value="">Select status</option>
+              <option value="New">New</option>
+              <option value="Damaged">Damaged</option>
+              <option value="Expired">Expired</option>
+              <option value="Other">Other...</option>
+            </select>
+            <input
+              type="text"
+              name="goods_status_custom"
+              class="custom-input hidden"
+              placeholder="Enter custom status"
+              disabled
+            />
+            <p class="error-message" data-error-for="goods_status"></p>
+          </div>
+
+          <div class="field">
+            <label>Quantity</label>
+            <div class="quantity-control">
+              <input type="number" name="quantity" min="1" step="1" inputmode="numeric" />
+              <button
+                type="button"
+                class="remove-row icon-button"
+                aria-label="Remove row"
+                title="Remove row"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <p class="error-message" data-error-for="quantity"></p>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <div id="sku-modal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sku-modal-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">SKU Picker</p>
+            <h2 id="sku-modal-title">Select SKU</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button modal-close"
+            aria-label="Close SKU picker"
+            data-close-modal="true"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="field">
+          <label for="sku-filter">Filter SKU List</label>
+          <input
+            id="sku-filter"
+            type="search"
+            placeholder="Search by SKU number, name, batch, or stock"
+          />
+        </div>
+
+        <div class="sku-table-wrap">
+          <table class="sku-table">
+            <thead>
+              <tr>
+                <th>SKU Number</th>
+                <th>SKU Name</th>
+                <th>Batch Number</th>
+                <th>Quantity In Stock</th>
+              </tr>
+            </thead>
+            <tbody id="sku-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>List of Allocation Request</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <p class="sidebar-kicker">Operations</p>
+          <h2>Menu</h2>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Primary navigation">
+          <div class="nav-group">
+            <button type="button" class="nav-parent is-open">
+              Allocation Management
+            </button>
+            <a
+              href="/Users/kaiyiqin/Documents/Codex/codex-project/list.html"
+              class="nav-child is-active"
+              aria-current="page"
+            >
+              List of Allocation Request
+            </a>
+            <a href="/Users/kaiyiqin/Documents/Codex/codex-project/index.html" class="nav-child">
+              Goods Allocation Request
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="page-shell">
+        <section class="hero">
+          <p class="eyebrow">Allocation Management</p>
+          <h1>List of Allocation Request</h1>
+          <p class="intro">
+            Search and review submitted allocation requests by order number, submitter,
+            status, or SKU number.
+          </p>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Searching Panel</p>
+              <h2>Search Conditions</h2>
+            </div>
+          </div>
+
+          <form id="request-search-form" class="search-form" novalidate>
+            <div class="search-grid">
+              <div class="field">
+                <label for="request_order_number">Request Order Number</label>
+                <input id="request_order_number" name="request_order_number" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="submitter">Submitter</label>
+                <input id="submitter" name="submitter" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="request_status">Request Order Status</label>
+                <select id="request_status" name="request_status">
+                  <option value="">All statuses</option>
+                  <option value="Approving">Approving</option>
+                  <option value="delivering">delivering</option>
+                  <option value="stock pending">stock pending</option>
+                  <option value="finished">finished</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="sku_number">SKU Number</label>
+                <input id="sku_number" name="sku_number" type="text" />
+              </div>
+            </div>
+
+            <div class="actions actions-start">
+              <button type="submit" class="primary-button">Search</button>
+              <button type="button" id="reset-search" class="ghost-button">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Action Panel</p>
+              <h2>Quick Actions</h2>
+            </div>
+          </div>
+
+          <div class="actions actions-start">
+            <a
+              href="/Users/kaiyiqin/Documents/Codex/codex-project/index.html"
+              class="primary-button button-link action-button"
+            >
+              Add
+            </a>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Request Information Panel</p>
+              <h2>Allocation Requests</h2>
+            </div>
+            <p id="table-summary" class="table-summary"></p>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Number of Allocation Request</th>
+                  <th>From Warehouse</th>
+                  <th>To Warehouse</th>
+                  <th>Total of Allocation Quantity</th>
+                  <th>Submitter</th>
+                  <th>Creation Date</th>
+                  <th>Request Order Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="request-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div id="request-modal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-request-modal="true"></div>
+      <div
+        class="modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="request-modal-title"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">Allocation Request</p>
+            <h2 id="request-modal-title">Request Details</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button modal-close"
+            aria-label="Close request details"
+            data-close-request-modal="true"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div id="request-detail-content" class="request-detail-content"></div>
+      </div>
+    </div>
+
+    <script src="list.js"></script>
+  </body>
+</html>
