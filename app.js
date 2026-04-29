@@ -5,7 +5,11 @@ const addRowButton = document.querySelector("#add-row");
 const detailsError = document.querySelector("#details-error");
 const skuModal = document.querySelector("#sku-modal");
 const skuFilterInput = document.querySelector("#sku-filter");
+const skuTableHead = document.querySelector("#sku-table-head");
 const skuTableBody = document.querySelector("#sku-table-body");
+const appShell = document.querySelector(".app-shell");
+const sidebarToggle = document.querySelector(".sidebar-toggle");
+const fillMethodInputs = Array.from(document.querySelectorAll('[name="fill_in_method"]'));
 
 const skuCatalog = [
   {
@@ -13,6 +17,12 @@ const skuCatalog = [
     SKU_name: "Organic Green Tea",
     batch_number: "BT-240301",
     stock_quantity: 180,
+  },
+  {
+    SKU_number: "SKU-1001",
+    SKU_name: "Organic Green Tea",
+    batch_number: "BT-240417",
+    stock_quantity: 64,
   },
   {
     SKU_number: "SKU-1002",
@@ -25,6 +35,12 @@ const skuCatalog = [
     SKU_name: "Cotton Tote Bag",
     batch_number: "BT-240322",
     stock_quantity: 240,
+  },
+  {
+    SKU_number: "SKU-1003",
+    SKU_name: "Cotton Tote Bag",
+    batch_number: "BT-240430",
+    stock_quantity: 115,
   },
   {
     SKU_number: "SKU-1004",
@@ -47,6 +63,7 @@ const skuCatalog = [
 ];
 
 let activeSkuRow = null;
+let fillInMethod = "by-batch";
 
 const warehouseSelects = [
   document.querySelector("#from_warehouse_select"),
@@ -56,18 +73,26 @@ const warehouseSelects = [
 initializeForm();
 
 function initializeForm() {
+  initializeSidebarToggle();
   setDefaultCreationDate();
   warehouseSelects.forEach((select) => toggleCustomInput(select));
   addDetailRow();
+  initializeFillInMethod();
 
   addRowButton.addEventListener("click", () => addDetailRow());
 
   form.addEventListener("click", (event) => {
     const removeButton = event.target.closest(".remove-row");
+    const copyButton = event.target.closest(".copy-row");
     const skuInput = event.target.closest(".sku-picker-input");
 
     if (skuInput) {
       openSkuModal(skuInput.closest(".detail-row"));
+      return;
+    }
+
+    if (copyButton) {
+      copyDetailRow(copyButton.closest(".detail-row"));
       return;
     }
 
@@ -135,6 +160,20 @@ function initializeForm() {
   });
 }
 
+function initializeSidebarToggle() {
+  if (!appShell || !sidebarToggle) {
+    return;
+  }
+
+  sidebarToggle.addEventListener("click", () => {
+    const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+    const label = isCollapsed ? "Show" : "Hide";
+    sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
+    sidebarToggle.setAttribute("aria-label", `${label} sidebar`);
+    sidebarToggle.querySelector(".sidebar-toggle-label").textContent = label;
+  });
+}
+
 function setDefaultCreationDate() {
   const creationDateInput = document.querySelector("#creation_date");
 
@@ -156,12 +195,41 @@ function getLocalDateString(date) {
 function addDetailRow() {
   const row = rowTemplate.content.firstElementChild.cloneNode(true);
   detailRowsContainer.appendChild(row);
+  syncRowWithFillMethod(row);
+  clearDetailsError();
+}
+
+function copyDetailRow(sourceRow) {
+  const row = rowTemplate.content.firstElementChild.cloneNode(true);
+
+  row.querySelector('[name="SKU_number"]').value =
+    sourceRow.querySelector('[name="SKU_number"]').value;
+  row.querySelector('[name="SKU_name"]').value =
+    sourceRow.querySelector('[name="SKU_name"]').value;
+  row.querySelector('[name="batch_number"]').value =
+    sourceRow.querySelector('[name="batch_number"]').value;
+
+  const sourceStatusSelect = sourceRow.querySelector('[name="goods_status_select"]');
+  const sourceStatusCustom = sourceRow.querySelector('[name="goods_status_custom"]');
+  const targetStatusSelect = row.querySelector('[name="goods_status_select"]');
+  const targetStatusCustom = row.querySelector('[name="goods_status_custom"]');
+
+  targetStatusSelect.value = sourceStatusSelect.value;
+  toggleCustomInput(targetStatusSelect);
+  targetStatusCustom.value = sourceStatusCustom.value;
+
+  row.querySelector('[name="quantity"]').value =
+    sourceRow.querySelector('[name="quantity"]').value;
+
+  detailRowsContainer.appendChild(row);
+  syncRowWithFillMethod(row);
   clearDetailsError();
 }
 
 function openSkuModal(row) {
   activeSkuRow = row;
   skuFilterInput.value = "";
+  syncSkuModalByMethod();
   renderSkuTable("");
   skuModal.classList.remove("hidden");
   skuModal.setAttribute("aria-hidden", "false");
@@ -178,24 +246,45 @@ function closeSkuModal() {
 
 function renderSkuTable(filterText) {
   const normalizedFilter = filterText.trim().toLowerCase();
-  const matchingItems = skuCatalog
-    .map((item, index) => ({ ...item, index }))
-    .filter((item) => {
-      if (!normalizedFilter) {
-        return true;
-      }
+  const sourceItems =
+    fillInMethod === "by-quantity"
+      ? getQuantityViewItems()
+      : skuCatalog.map((item, index) => ({ ...item, index }));
+  const matchingItems = sourceItems.filter((item) => {
+    const searchFields =
+      fillInMethod === "by-quantity"
+        ? [item.SKU_number, item.SKU_name, String(item.stock_quantity)]
+        : [item.SKU_number, item.SKU_name, item.batch_number, String(item.stock_quantity)];
 
-      return [
-        item.SKU_number,
-        item.SKU_name,
-        item.batch_number,
-        String(item.stock_quantity),
-      ].some((value) => value.toLowerCase().includes(normalizedFilter));
-    });
+    if (!normalizedFilter) {
+      return true;
+    }
+
+    return searchFields.some((value) => value.toLowerCase().includes(normalizedFilter));
+  });
 
   if (matchingItems.length === 0) {
-    skuTableBody.innerHTML =
-      '<tr><td colspan="4" class="empty-state">No SKU matches your filter.</td></tr>';
+    skuTableBody.innerHTML = `<tr><td colspan="${
+      fillInMethod === "by-quantity" ? 2 : 3
+    }" class="empty-state">No SKU matches your filter.</td></tr>`;
+    return;
+  }
+
+  if (fillInMethod === "by-quantity") {
+    skuTableBody.innerHTML = matchingItems
+      .map(
+        (item) => `
+          <tr>
+            <td>
+              <button type="button" class="sku-row-button" data-sku-index="${item.index}">
+                ${item.SKU_number}
+              </button>
+            </td>
+            <td>${item.stock_quantity}</td>
+          </tr>
+        `
+      )
+      .join("");
     return;
   }
 
@@ -208,7 +297,6 @@ function renderSkuTable(filterText) {
               ${item.SKU_number}
             </button>
           </td>
-          <td>${item.SKU_name}</td>
           <td>${item.batch_number}</td>
           <td>${item.stock_quantity}</td>
         </tr>
@@ -220,11 +308,93 @@ function renderSkuTable(filterText) {
 function applySkuSelection(row, skuRecord) {
   row.querySelector('[name="SKU_number"]').value = skuRecord.SKU_number;
   row.querySelector('[name="SKU_name"]').value = skuRecord.SKU_name;
-  row.querySelector('[name="batch_number"]').value = skuRecord.batch_number;
+  row.querySelector('[name="batch_number"]').value =
+    fillInMethod === "by-batch" ? skuRecord.batch_number : "";
   clearFieldError(row.querySelector('[name="SKU_number"]').closest(".field"));
   clearFieldError(row.querySelector('[name="SKU_name"]').closest(".field"));
   clearFieldError(row.querySelector('[name="batch_number"]').closest(".field"));
   clearDetailsError();
+}
+
+function initializeFillInMethod() {
+  fillMethodInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      if (!input.checked) {
+        return;
+      }
+
+      fillInMethod = input.value;
+      detailRowsContainer.querySelectorAll(".detail-row").forEach((row) => syncRowWithFillMethod(row));
+
+      if (!skuModal.classList.contains("hidden")) {
+        syncSkuModalByMethod();
+        renderSkuTable(skuFilterInput.value);
+      }
+    });
+  });
+}
+
+function syncRowWithFillMethod(row) {
+  const batchField = row.querySelector(".batch-field");
+
+  if (!batchField) {
+    return;
+  }
+
+  const isBatchMode = fillInMethod === "by-batch";
+  batchField.classList.toggle("hidden-by-method", !isBatchMode);
+
+  if (!isBatchMode) {
+    clearFieldError(batchField);
+  }
+}
+
+function syncSkuModalByMethod() {
+  const title = document.querySelector("#sku-modal-title");
+
+  if (fillInMethod === "by-quantity") {
+    title.textContent = "Select SKU by Quantity";
+    skuFilterInput.placeholder = "Search by SKU number or quantity";
+    skuTableHead.innerHTML = `
+      <tr>
+        <th>SKU Number</th>
+        <th>Quantity</th>
+      </tr>
+    `;
+    return;
+  }
+
+  title.textContent = "Select SKU by Batch";
+  skuFilterInput.placeholder = "Search by SKU number, batch number, or quantity";
+  skuTableHead.innerHTML = `
+    <tr>
+      <th>SKU Number</th>
+      <th>Batch Number</th>
+      <th>Quantity</th>
+    </tr>
+  `;
+}
+
+function getQuantityViewItems() {
+  const groupedItems = new Map();
+
+  skuCatalog.forEach((item, index) => {
+    const existingItem = groupedItems.get(item.SKU_number);
+
+    if (!existingItem) {
+      groupedItems.set(item.SKU_number, {
+        index,
+        SKU_number: item.SKU_number,
+        SKU_name: item.SKU_name,
+        stock_quantity: item.stock_quantity,
+      });
+      return;
+    }
+
+    existingItem.stock_quantity += item.stock_quantity;
+  });
+
+  return Array.from(groupedItems.values());
 }
 
 function toggleCustomInput(selectElement) {
@@ -296,7 +466,7 @@ function validateForm() {
       rowValid = false;
     }
 
-    if (!batchNumber) {
+    if (fillInMethod === "by-batch" && !batchNumber) {
       showRowError(row, "batch_number", "Batch number is required.");
       rowValid = false;
     }

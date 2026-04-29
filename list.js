@@ -4,6 +4,8 @@ const requestTableBody = document.querySelector("#request-table-body");
 const tableSummary = document.querySelector("#table-summary");
 const requestModal = document.querySelector("#request-modal");
 const requestDetailContent = document.querySelector("#request-detail-content");
+const appShell = document.querySelector(".app-shell");
+const sidebarToggle = document.querySelector(".sidebar-toggle");
 
 const allocationRequests = [
   {
@@ -17,6 +19,20 @@ const allocationRequests = [
     sku_numbers: ["SKU-1001", "SKU-1002"],
     remark: "Priority replenishment for Central Hub",
     execution_date: "2026-04-25",
+    sku_lines: [
+      {
+        sku_number: "SKU-1001",
+        sku_name: "Organic Green Tea",
+        batch_number: "BT-240301",
+        quantity: 80,
+      },
+      {
+        sku_number: "SKU-1002",
+        sku_name: "Ceramic Mug 12oz",
+        batch_number: "BT-240318",
+        quantity: 40,
+      },
+    ],
   },
   {
     request_order_number: "DB202604240002",
@@ -29,6 +45,14 @@ const allocationRequests = [
     sku_numbers: ["SKU-1004"],
     remark: "Route confirmed with delivery team",
     execution_date: "2026-04-24",
+    sku_lines: [
+      {
+        sku_number: "SKU-1004",
+        sku_name: "Sparkling Water Pack",
+        batch_number: "BT-240401",
+        quantity: 48,
+      },
+    ],
   },
   {
     request_order_number: "DB202604230001",
@@ -41,6 +65,20 @@ const allocationRequests = [
     sku_numbers: ["SKU-1003", "SKU-1006"],
     remark: "Pending final stock confirmation before release",
     execution_date: "2026-04-26",
+    sku_lines: [
+      {
+        sku_number: "SKU-1003",
+        sku_name: "Cotton Tote Bag",
+        batch_number: "BT-240322",
+        quantity: 36,
+      },
+      {
+        sku_number: "SKU-1006",
+        sku_name: "Notebook A5",
+        batch_number: "BT-240414",
+        quantity: 50,
+      },
+    ],
   },
   {
     request_order_number: "DB202604220001",
@@ -53,6 +91,20 @@ const allocationRequests = [
     sku_numbers: ["SKU-1005", "SKU-1002"],
     remark: "Completed and signed off by receiving warehouse",
     execution_date: "2026-04-22",
+    sku_lines: [
+      {
+        sku_number: "SKU-1005",
+        sku_name: "LED Desk Lamp",
+        batch_number: "BT-240409",
+        quantity: 150,
+      },
+      {
+        sku_number: "SKU-1002",
+        sku_name: "Ceramic Mug 12oz",
+        batch_number: "BT-240318",
+        quantity: 60,
+      },
+    ],
   },
 ];
 
@@ -60,6 +112,7 @@ initializePage();
 
 function initializePage() {
   renderTable(allocationRequests);
+  initializeSidebarToggle();
 
   searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -99,6 +152,20 @@ function initializePage() {
     if (event.key === "Escape" && !requestModal.classList.contains("hidden")) {
       closeRequestModal();
     }
+  });
+}
+
+function initializeSidebarToggle() {
+  if (!appShell || !sidebarToggle) {
+    return;
+  }
+
+  sidebarToggle.addEventListener("click", () => {
+    const isCollapsed = appShell.classList.toggle("sidebar-collapsed");
+    const label = isCollapsed ? "Show" : "Hide";
+    sidebarToggle.setAttribute("aria-expanded", String(!isCollapsed));
+    sidebarToggle.setAttribute("aria-label", `${label} sidebar`);
+    sidebarToggle.querySelector(".sidebar-toggle-label").textContent = label;
   });
 }
 
@@ -158,6 +225,45 @@ function renderTable(requests) {
 }
 
 function openRequestModal(request) {
+  const skuLinesTable = request.sku_lines?.length
+    ? `
+      <div class="request-detail-block">
+        <span class="detail-label">SKU Lines</span>
+        <div class="request-line-table-wrap">
+          <table class="request-line-table">
+            <thead>
+              <tr>
+                <th>SKU Number</th>
+                <th>SKU Name</th>
+                <th>Batch Number</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${request.sku_lines
+                .map(
+                  (line) => `
+                    <tr>
+                      <td>${line.sku_number}</td>
+                      <td>${line.sku_name}</td>
+                      <td>${line.batch_number}</td>
+                      <td>${line.quantity}</td>
+                    </tr>
+                  `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `
+    : `
+      <div class="request-detail-block">
+        <span class="detail-label">SKU Lines</span>
+        <p>-</p>
+      </div>
+    `;
+
   requestDetailContent.innerHTML = `
     <div class="request-detail-grid">
       <div class="request-detail-item">
@@ -193,10 +299,7 @@ function openRequestModal(request) {
         <strong>${request.request_status}</strong>
       </div>
     </div>
-    <div class="request-detail-block">
-      <span class="detail-label">SKU Numbers</span>
-      <p>${request.sku_numbers.join(", ")}</p>
-    </div>
+    ${skuLinesTable}
     <div class="request-detail-block">
       <span class="detail-label">Remark</span>
       <p>${request.remark || "-"}</p>

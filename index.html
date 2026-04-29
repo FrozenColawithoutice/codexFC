@@ -14,6 +14,15 @@
           <h2>Menu</h2>
         </div>
 
+        <button
+          type="button"
+          class="sidebar-toggle"
+          aria-label="Hide sidebar"
+          aria-expanded="true"
+        >
+          <span class="sidebar-toggle-label">Hide</span>
+        </button>
+
         <nav class="sidebar-nav" aria-label="Primary navigation">
           <div class="nav-group">
             <button type="button" class="nav-parent is-open">
@@ -33,113 +42,326 @@
         </nav>
       </aside>
 
-      <div class="page-shell">
-        <section class="hero">
-          <p class="eyebrow">Warehouse Operations</p>
-          <h1>Goods Allocation Request</h1>
-          <p class="intro">
-            Capture transfer details, validate the request, and preview the final
-            payload before it goes anywhere else.
-          </p>
-        </section>
+      <div class="page-shell page-layout">
+        <div class="page-main">
+          <section class="hero">
+            <p class="eyebrow">Warehouse Operations</p>
+            <h1>Goods Allocation Request</h1>
+            <p class="intro">
+              Capture transfer details, validate the request, and preview the final
+              payload before it goes anywhere else.
+            </p>
+          </section>
 
-        <section class="panel">
-          <form id="allocation-form" novalidate>
-            <div class="section-heading">
-              <div>
-                <p class="section-kicker">Header</p>
-                <h2>Request Information</h2>
+          <section class="panel">
+            <form id="allocation-form" novalidate>
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Header</p>
+                  <h2>Request Information</h2>
+                </div>
               </div>
+
+              <div class="header-grid">
+                <div class="field">
+                  <label for="creation_date">Creation Date</label>
+                  <input id="creation_date" name="creation_date" type="text" readonly disabled />
+                </div>
+
+                <div class="field">
+                  <label for="execution_date">Execution Date</label>
+                  <input id="execution_date" name="execution_date" type="date" />
+                </div>
+
+                <div class="field">
+                  <label for="remark">Remark</label>
+                  <input
+                    id="remark"
+                    name="remark"
+                    type="text"
+                    placeholder="Add an optional note"
+                  />
+                </div>
+
+                <div class="field">
+                  <label for="from_warehouse_select">From Warehouse</label>
+                  <select
+                    id="from_warehouse_select"
+                    name="from_warehouse_select"
+                    data-custom-target="from_warehouse_custom"
+                  >
+                    <option value="">Select a warehouse</option>
+                    <option value="North Hub">North Hub</option>
+                    <option value="South Hub">South Hub</option>
+                    <option value="East Depot">East Depot</option>
+                    <option value="Custom">Custom...</option>
+                  </select>
+                  <input
+                    id="from_warehouse_custom"
+                    name="from_warehouse_custom"
+                    type="text"
+                    class="custom-input hidden"
+                    placeholder="Enter custom warehouse"
+                    disabled
+                  />
+                  <p class="error-message" data-error-for="From_warehouse"></p>
+                </div>
+
+                <div class="field">
+                  <label for="to_warehouse_select">To Warehouse</label>
+                  <select
+                    id="to_warehouse_select"
+                    name="to_warehouse_select"
+                    data-custom-target="to_warehouse_custom"
+                  >
+                    <option value="">Select a warehouse</option>
+                    <option value="Central Hub">Central Hub</option>
+                    <option value="Returns Center">Returns Center</option>
+                    <option value="Overflow Site">Overflow Site</option>
+                    <option value="Custom">Custom...</option>
+                  </select>
+                  <input
+                    id="to_warehouse_custom"
+                    name="to_warehouse_custom"
+                    type="text"
+                    class="custom-input hidden"
+                    placeholder="Enter custom warehouse"
+                    disabled
+                  />
+                  <p class="error-message" data-error-for="To_warehouse"></p>
+                </div>
+              </div>
+
+              <div class="section-heading details-heading">
+                <div>
+                  <p class="section-kicker">Details</p>
+                  <h2>SKU Lines</h2>
+                </div>
+                <button type="button" id="add-row" class="icon-button add-row-button" aria-label="Add row" title="Add row">
+                  <span aria-hidden="true">+</span>
+                </button>
+              </div>
+
+              <div class="fill-method-panel">
+                <span class="fill-method-label">Fill In Method</span>
+                <label class="fill-method-option">
+                  <input type="radio" name="fill_in_method" value="by-quantity" />
+                  <span>by quantity</span>
+                </label>
+                <label class="fill-method-option">
+                  <input type="radio" name="fill_in_method" value="by-batch" checked />
+                  <span>by batch</span>
+                </label>
+              </div>
+
+              <div id="details-error" class="form-level-error" aria-live="polite"></div>
+              <div id="detail-rows" class="detail-rows"></div>
+
+              <div class="actions">
+                <button type="submit" class="primary-button">Submit</button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <aside class="page-guide panel" aria-labelledby="page-guide-title">
+          <div class="section-heading guide-heading">
+            <div>
+              <p class="section-kicker">PRD Guide</p>
+              <h2 id="page-guide-title">字段与交互说明</h2>
             </div>
+          </div>
 
-            <div class="header-grid">
-              <div class="field">
-                <label for="creation_date">Creation Date</label>
-                <input id="creation_date" name="creation_date" type="text" readonly disabled />
-              </div>
+          <div class="guide-section">
+            <h3>按钮交互</h3>
+            <ul class="guide-bullets">
+              <li><code>+</code>：新增一条空的 SKU 明细行。</li>
+              <li><code>Copy</code>：复制当前明细行数据，并追加为一条新行。</li>
+              <li><code>Remove</code>：立即删除当前明细行；提交时仍要求至少有 1 条有效明细。</li>
+              <li><code>Submit</code>：执行前端校验；当前版本不调用后端接口，也不做真实保存。</li>
+              <li>侧边栏 <code>Hide / Show</code>：收起或展开左侧菜单，主内容区域同步扩展或回收。</li>
+            </ul>
+          </div>
 
-              <div class="field">
-                <label for="execution_date">Execution Date</label>
-                <input id="execution_date" name="execution_date" type="date" />
-              </div>
-
-              <div class="field">
-                <label for="remark">Remark</label>
-                <input
-                  id="remark"
-                  name="remark"
-                  type="text"
-                  placeholder="Add an optional note"
-                />
-              </div>
-
-              <div class="field">
-                <label for="from_warehouse_select">From Warehouse</label>
-                <select
-                  id="from_warehouse_select"
-                  name="from_warehouse_select"
-                  data-custom-target="from_warehouse_custom"
-                >
-                  <option value="">Select a warehouse</option>
-                  <option value="North Hub">North Hub</option>
-                  <option value="South Hub">South Hub</option>
-                  <option value="East Depot">East Depot</option>
-                  <option value="Custom">Custom...</option>
-                </select>
-                <input
-                  id="from_warehouse_custom"
-                  name="from_warehouse_custom"
-                  type="text"
-                  class="custom-input hidden"
-                  placeholder="Enter custom warehouse"
-                  disabled
-                />
-                <p class="error-message" data-error-for="From_warehouse"></p>
-              </div>
-
-              <div class="field">
-                <label for="to_warehouse_select">To Warehouse</label>
-                <select
-                  id="to_warehouse_select"
-                  name="to_warehouse_select"
-                  data-custom-target="to_warehouse_custom"
-                >
-                  <option value="">Select a warehouse</option>
-                  <option value="Central Hub">Central Hub</option>
-                  <option value="Returns Center">Returns Center</option>
-                  <option value="Overflow Site">Overflow Site</option>
-                  <option value="Custom">Custom...</option>
-                </select>
-                <input
-                  id="to_warehouse_custom"
-                  name="to_warehouse_custom"
-                  type="text"
-                  class="custom-input hidden"
-                  placeholder="Enter custom warehouse"
-                  disabled
-                />
-                <p class="error-message" data-error-for="To_warehouse"></p>
-              </div>
+          <div class="guide-section">
+            <h3>头信息字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Creation Date</td>
+                    <td>浏览器本地当前日期</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>页面首次加载时自动填充，用户不可编辑。</td>
+                  </tr>
+                  <tr>
+                    <td>Execution Date</td>
+                    <td></td>
+                    <td>日期选择</td>
+                    <td>否</td>
+                    <td>用于填写计划执行日期。</td>
+                  </tr>
+                  <tr>
+                    <td>Remark</td>
+                    <td></td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>用于补充说明当前调拨申请。</td>
+                  </tr>
+                  <tr>
+                    <td>From Warehouse</td>
+                    <td>预置仓库枚举 / 用户自定义</td>
+                    <td>下拉单选 + 自定义输入</td>
+                    <td>是</td>
+                    <td>选择 <code>Custom...</code> 时显示自定义输入框；提交时取最终解析值。</td>
+                  </tr>
+                  <tr>
+                    <td>To Warehouse</td>
+                    <td>预置仓库枚举 / 用户自定义</td>
+                    <td>下拉单选 + 自定义输入</td>
+                    <td>是</td>
+                    <td>选择 <code>Custom...</code> 时显示自定义输入框；提交时取最终解析值。</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
 
-            <div class="section-heading details-heading">
-              <div>
-                <p class="section-kicker">Details</p>
-                <h2>SKU Lines</h2>
-              </div>
-              <button type="button" id="add-row" class="icon-button add-row-button" aria-label="Add row" title="Add row">
-                <span aria-hidden="true">+</span>
-              </button>
+          <div class="guide-section">
+            <h3>明细字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Fill In Method</td>
+                    <td>录入方式枚举</td>
+                    <td>单选切换</td>
+                    <td>是</td>
+                    <td><code>by quantity</code> 按 SKU 汇总库存选择；<code>by batch</code> 按具体批次选择。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Number</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>点击选择</td>
+                    <td>是</td>
+                    <td>点击后打开 SKU 选择弹窗，并回填当前行。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Name</td>
+                    <td>SKU 本地模拟数据 / 用户调整</td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>选中 SKU 后自动带出，也允许人工调整。</td>
+                  </tr>
+                  <tr>
+                    <td>Batch Number</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>文字填写</td>
+                    <td>按模式</td>
+                    <td><code>by batch</code> 模式下必填；<code>by quantity</code> 模式下隐藏且不参与校验。</td>
+                  </tr>
+                  <tr>
+                    <td>Goods Status</td>
+                    <td>状态枚举 / 用户自定义</td>
+                    <td>下拉单选 + 自定义输入</td>
+                    <td>否</td>
+                    <td>预置值包括 <code>New</code>、<code>Damaged</code>、<code>Expired</code>、<code>Other...</code>。</td>
+                  </tr>
+                  <tr>
+                    <td>Quantity</td>
+                    <td></td>
+                    <td>数字填写</td>
+                    <td>是</td>
+                    <td>必须为正整数，作为当前 SKU 行的申请数量。</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+          </div>
 
-            <div id="details-error" class="form-level-error" aria-live="polite"></div>
-            <div id="detail-rows" class="detail-rows"></div>
-
-            <div class="actions">
-              <button type="submit" class="primary-button">Submit</button>
+          <div class="guide-section">
+            <h3>SKU 弹窗字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>SKU Filter</td>
+                    <td></td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>支持按 SKU 编号、名称、批次号、库存数量做模糊过滤。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Number</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>表格选择</td>
+                    <td>是</td>
+                    <td>点击 SKU 记录后回填到当前明细行。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Name</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>否</td>
+                    <td><code>by quantity</code> 模式下当前弹窗主展示 SKU 编号和库存数量，名称用于过滤和回填。</td>
+                  </tr>
+                  <tr>
+                    <td>Batch Number</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>表格选择</td>
+                    <td>按模式</td>
+                    <td><code>by batch</code> 模式下展示并回填；<code>by quantity</code> 模式下不回填批次。</td>
+                  </tr>
+                  <tr>
+                    <td>Quantity In Stock</td>
+                    <td>SKU 本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示可用库存；<code>by quantity</code> 模式下按 SKU 汇总展示。</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </form>
-        </section>
+          </div>
+
+          <div class="guide-section">
+            <h3>校验与反馈</h3>
+            <ul class="guide-bullets">
+              <li>页面首次加载时默认生成 1 条空明细行。</li>
+              <li>提交时校验来源仓、目标仓、至少 1 条有效明细，以及明细必填字段。</li>
+              <li>有效明细至少需要 <code>SKU Number</code> 和正整数 <code>Quantity</code>；按批次模式还需要 <code>Batch Number</code>。</li>
+              <li>字段错误会显示在字段附近，用户修改后对应错误会被清除。</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </main>
 
@@ -164,7 +386,7 @@
             <p class="error-message" data-error-for="SKU_name"></p>
           </div>
 
-          <div class="field">
+          <div class="field batch-field">
             <label>Batch Number</label>
             <input type="text" name="batch_number" />
             <p class="error-message" data-error-for="batch_number"></p>
@@ -193,6 +415,14 @@
             <label>Quantity</label>
             <div class="quantity-control">
               <input type="number" name="quantity" min="1" step="1" inputmode="numeric" />
+              <button
+                type="button"
+                class="copy-row icon-button"
+                aria-label="Copy row"
+                title="Copy row"
+              >
+                <span aria-hidden="true">⧉</span>
+              </button>
               <button
                 type="button"
                 class="remove-row icon-button"
@@ -242,14 +472,7 @@
 
         <div class="sku-table-wrap">
           <table class="sku-table">
-            <thead>
-              <tr>
-                <th>SKU Number</th>
-                <th>SKU Name</th>
-                <th>Batch Number</th>
-                <th>Quantity In Stock</th>
-              </tr>
-            </thead>
+            <thead id="sku-table-head"></thead>
             <tbody id="sku-table-body"></tbody>
           </table>
         </div>

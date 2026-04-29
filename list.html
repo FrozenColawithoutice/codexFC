@@ -14,6 +14,15 @@
           <h2>Menu</h2>
         </div>
 
+        <button
+          type="button"
+          class="sidebar-toggle"
+          aria-label="Hide sidebar"
+          aria-expanded="true"
+        >
+          <span class="sidebar-toggle-label">Hide</span>
+        </button>
+
         <nav class="sidebar-nav" aria-label="Primary navigation">
           <div class="nav-group">
             <button type="button" class="nav-parent is-open">
@@ -33,105 +42,338 @@
         </nav>
       </aside>
 
-      <div class="page-shell">
-        <section class="hero">
-          <p class="eyebrow">Allocation Management</p>
-          <h1>List of Allocation Request</h1>
-          <p class="intro">
-            Search and review submitted allocation requests by order number, submitter,
-            status, or SKU number.
-          </p>
-        </section>
+      <div class="page-shell page-layout">
+        <div class="page-main">
+          <section class="hero">
+            <p class="eyebrow">Allocation Management</p>
+            <h1>List of Allocation Request</h1>
+            <p class="intro">
+              Search and review submitted allocation requests by order number, submitter,
+              status, or SKU number.
+            </p>
+          </section>
 
-        <section class="panel">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Searching Panel</p>
-              <h2>Search Conditions</h2>
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Searching Panel</p>
+                <h2>Search Conditions</h2>
+              </div>
             </div>
-          </div>
 
-          <form id="request-search-form" class="search-form" novalidate>
-            <div class="search-grid">
-              <div class="field">
-                <label for="request_order_number">Request Order Number</label>
-                <input id="request_order_number" name="request_order_number" type="text" />
+            <form id="request-search-form" class="search-form" novalidate>
+              <div class="search-grid">
+                <div class="field">
+                  <label for="request_order_number">Request Order Number</label>
+                  <input id="request_order_number" name="request_order_number" type="text" />
+                </div>
+
+                <div class="field">
+                  <label for="submitter">Submitter</label>
+                  <input id="submitter" name="submitter" type="text" />
+                </div>
+
+                <div class="field">
+                  <label for="request_status">Request Order Status</label>
+                  <select id="request_status" name="request_status">
+                    <option value="">All statuses</option>
+                    <option value="Approving">Approving</option>
+                    <option value="delivering">delivering</option>
+                    <option value="stock pending">stock pending</option>
+                    <option value="finished">finished</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="sku_number">SKU Number</label>
+                  <input id="sku_number" name="sku_number" type="text" />
+                </div>
               </div>
 
-              <div class="field">
-                <label for="submitter">Submitter</label>
-                <input id="submitter" name="submitter" type="text" />
+              <div class="actions actions-start">
+                <button type="submit" class="primary-button">Search</button>
+                <button type="button" id="reset-search" class="ghost-button">Reset</button>
               </div>
+            </form>
+          </section>
 
-              <div class="field">
-                <label for="request_status">Request Order Status</label>
-                <select id="request_status" name="request_status">
-                  <option value="">All statuses</option>
-                  <option value="Approving">Approving</option>
-                  <option value="delivering">delivering</option>
-                  <option value="stock pending">stock pending</option>
-                  <option value="finished">finished</option>
-                </select>
-              </div>
-
-              <div class="field">
-                <label for="sku_number">SKU Number</label>
-                <input id="sku_number" name="sku_number" type="text" />
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Action Panel</p>
+                <h2>Quick Actions</h2>
               </div>
             </div>
 
             <div class="actions actions-start">
-              <button type="submit" class="primary-button">Search</button>
-              <button type="button" id="reset-search" class="ghost-button">Reset</button>
+              <a
+                href="/Users/kaiyiqin/Documents/Codex/codex-project/index.html"
+                class="primary-button button-link action-button"
+              >
+                Add
+              </a>
             </div>
-          </form>
-        </section>
+          </section>
 
-        <section class="panel">
-          <div class="section-heading">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Request Information Panel</p>
+                <h2>Allocation Requests</h2>
+              </div>
+              <p id="table-summary" class="table-summary"></p>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Number of Allocation Request</th>
+                    <th>From Warehouse</th>
+                    <th>To Warehouse</th>
+                    <th>Total of Allocation Quantity</th>
+                    <th>Submitter</th>
+                    <th>Creation Date</th>
+                    <th>Request Order Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="request-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <aside class="page-guide panel" aria-labelledby="list-guide-title">
+          <div class="section-heading guide-heading">
             <div>
-              <p class="section-kicker">Action Panel</p>
-              <h2>Quick Actions</h2>
+              <p class="section-kicker">PRD Guide</p>
+              <h2 id="list-guide-title">字段与交互说明</h2>
             </div>
           </div>
 
-          <div class="actions actions-start">
-            <a
-              href="/Users/kaiyiqin/Documents/Codex/codex-project/index.html"
-              class="primary-button button-link action-button"
-            >
-              Add
-            </a>
+          <div class="guide-section">
+            <h3>按钮交互</h3>
+            <ul class="guide-bullets">
+              <li><code>Search</code>：读取当前搜索条件，并基于本地模拟数据刷新列表。</li>
+              <li><code>Reset</code>：清空全部搜索条件，并恢复展示全部申请数据。</li>
+              <li><code>Add</code>：跳转到 <code>Goods Allocation Request</code> 创建页。</li>
+              <li><code>Details</code>：打开当前行对应的申请详情弹窗。</li>
+              <li>弹窗关闭：支持点击关闭按钮、点击遮罩层或按下 <code>Escape</code>。</li>
+            </ul>
           </div>
-        </section>
 
-        <section class="panel">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Request Information Panel</p>
-              <h2>Allocation Requests</h2>
+          <div class="guide-section">
+            <h3>搜索字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Request Order Number</td>
+                    <td></td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>按调拨申请单号做包含匹配，例如 <code>DB202604240001</code>。</td>
+                  </tr>
+                  <tr>
+                    <td>Submitter</td>
+                    <td></td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>按提交人名称做包含匹配。</td>
+                  </tr>
+                  <tr>
+                    <td>Request Order Status</td>
+                    <td>状态枚举</td>
+                    <td>下拉单选</td>
+                    <td>否</td>
+                    <td>枚举包括 <code>Approving</code>、<code>delivering</code>、<code>stock pending</code>、<code>finished</code>。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Number</td>
+                    <td></td>
+                    <td>文字填写</td>
+                    <td>否</td>
+                    <td>若申请单关联的任一 SKU 编号命中输入内容，则该申请单会被展示。</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <p id="table-summary" class="table-summary"></p>
           </div>
 
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Number of Allocation Request</th>
-                  <th>From Warehouse</th>
-                  <th>To Warehouse</th>
-                  <th>Total of Allocation Quantity</th>
-                  <th>Submitter</th>
-                  <th>Creation Date</th>
-                  <th>Request Order Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="request-table-body"></tbody>
-            </table>
+          <div class="guide-section">
+            <h3>列表字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Number of Allocation Request</td>
+                    <td>申请单本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>编号规则为 <code>DB</code> + <code>YYYYMMDD</code> + <code>####</code>。</td>
+                  </tr>
+                  <tr>
+                    <td>From Warehouse</td>
+                    <td>申请单本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示申请单的来源仓。</td>
+                  </tr>
+                  <tr>
+                    <td>To Warehouse</td>
+                    <td>申请单本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示申请单的目标仓。</td>
+                  </tr>
+                  <tr>
+                    <td>Total of Allocation Quantity</td>
+                    <td>SKU 明细数量汇总</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示该申请单下所有 SKU 明细数量的汇总值。</td>
+                  </tr>
+                  <tr>
+                    <td>Submitter</td>
+                    <td>申请单本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示提交人。</td>
+                  </tr>
+                  <tr>
+                    <td>Creation Date</td>
+                    <td>申请单本地模拟数据</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示申请创建日期。</td>
+                  </tr>
+                  <tr>
+                    <td>Request Order Status</td>
+                    <td>状态枚举</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>使用状态标签便于扫描。</td>
+                  </tr>
+                  <tr>
+                    <td>Action</td>
+                    <td>当前列表行</td>
+                    <td>链接按钮</td>
+                    <td>是</td>
+                    <td>点击 <code>Details</code> 打开详情弹窗；操作列固定在表格右侧。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </section>
+
+          <div class="guide-section">
+            <h3>详情弹窗字段</h3>
+            <div class="guide-table-wrap">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>字段名称</th>
+                    <th>数据来源</th>
+                    <th>交互方式</th>
+                    <th>是否必填</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Request Order Number</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>用于和列表中的申请记录保持一致。</td>
+                  </tr>
+                  <tr>
+                    <td>Submitter</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示提交该调拨申请的人员。</td>
+                  </tr>
+                  <tr>
+                    <td>From Warehouse</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示库存调出的仓库。</td>
+                  </tr>
+                  <tr>
+                    <td>To Warehouse</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示库存调入的仓库。</td>
+                  </tr>
+                  <tr>
+                    <td>Creation Date</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示申请创建日期。</td>
+                  </tr>
+                  <tr>
+                    <td>Execution Date</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>否</td>
+                    <td>展示计划执行日期。</td>
+                  </tr>
+                  <tr>
+                    <td>Total Allocation Quantity</td>
+                    <td>SKU 明细数量汇总</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示当前申请下所有 SKU 明细数量的合计值。</td>
+                  </tr>
+                  <tr>
+                    <td>Request Order Status</td>
+                    <td>状态枚举</td>
+                    <td>只读展示</td>
+                    <td>是</td>
+                    <td>展示当前申请状态。</td>
+                  </tr>
+                  <tr>
+                    <td>SKU Lines</td>
+                    <td>当前申请单 SKU 明细</td>
+                    <td>表格展示</td>
+                    <td>是</td>
+                    <td>包含 <code>SKU Number</code>、<code>SKU Name</code>、<code>Batch Number</code>、<code>Quantity</code>。</td>
+                  </tr>
+                  <tr>
+                    <td>Remark</td>
+                    <td>当前申请单</td>
+                    <td>只读展示</td>
+                    <td>否</td>
+                    <td>展示申请提交时填写的备注信息；没有备注时显示为空值占位。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </aside>
       </div>
     </main>
 
